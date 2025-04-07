@@ -6,21 +6,16 @@ import java.util.Scanner;
 
 public class etudiantListeChaine {
     public static void main(String[] args) {
-        Etudiants listEtudiants = new Etudiants();
-        Etudiant bakr = new Etudiant(101);
-        bakr.initialiserNotes(14, 13, 12);
-        Etudiant younes = new Etudiant(104);
-        Etudiant khadija = new Etudiant(107);
-        khadija.initialiserNotes(14, 15, 12);
-        younes.initialiserNotes(17, 19, 20);
-        listEtudiants.ajouterTete(khadija);
-        listEtudiants.ajouterTete(bakr);
-        listEtudiants.ajouterTete(younes);
-        String result = "";
-        for (int i = 0; i < listEtudiants.afficherOrdreMoyenne().length; i++) {
-            result += " " + listEtudiants.afficherOrdreMoyenne()[i];
-        }
-        System.out.println(result);
+        Matrice matrice = new Matrice();
+        Matrice matrice2 = new Matrice();
+        matrice.ajouterFin(2, 7, 2.9);
+        matrice2.ajouterFin(2, 5, 3.5);
+        matrice2.ajouterFin(3, 5, 4.5);
+        matrice2.ajouterFin(3, 9, 7.2);
+        matrice.ajouterFin(3, 9, 5);
+        matrice.ajouterFin(2, 5, 7.5);
+        Matrice result = matrice.calculerSomme(matrice2);
+        result.afficher();
     }
 }
 
@@ -47,8 +42,8 @@ class Noeud {
 }
 
 class Liste {
-    private Noeud head;
-    private int taille;
+    protected Noeud head;
+    protected int taille;
 
     public Liste() {
         this.head = null;
@@ -536,5 +531,162 @@ class Etudiants extends Liste {
             current = current.getSuivant();
         }
         System.out.println(results);
+    }
+
+}
+
+class Element {
+    private int ligne;
+    private int colone;
+    private double valeur;
+    Element suivant;
+
+    public Element(int ligne, int colone, double valeur) {
+        this.ligne = ligne;
+        this.colone = colone;
+        this.valeur = valeur;
+    }
+
+    public int getLigne() {
+        return this.ligne;
+    }
+
+    public int getColone() {
+        return this.colone;
+    }
+
+    public double getValeur() {
+        return this.valeur;
+    }
+
+    public void setLigne(int ligne) {
+        this.ligne = ligne;
+    }
+
+    public void setColone(int colone) {
+        this.colone = colone;
+    }
+
+    public void setValeur(double valeur) {
+        this.valeur = valeur;
+    }
+
+}
+
+class Matrice extends Liste {
+    public Matrice() {
+        super();
+    }
+
+    public boolean ajouterFin(int ligne, int colone, double valeur) {
+        Element element = new Element(ligne, colone, valeur);
+        Noeud nouveau = new Noeud(element);
+        if (this.getHead() == null) {
+            this.head = nouveau;
+            this.taille++;
+            return true;
+        }
+        Noeud current = this.getHead();
+        Noeud precedent = this.getHead();
+        while (current != null) {
+            precedent = current;
+            Element currElement = (Element) current.getElement();
+            if (currElement.getColone() == colone && currElement.getLigne() == ligne) {
+                currElement.setValeur(valeur);
+                return true;
+            }
+            current = current.getSuivant();
+        }
+        precedent.setSuivant(nouveau);
+        this.taille++;
+        return true;
+    }
+
+    public boolean supprimerIndice(int ligne, int colone) {
+        if (taille == 0) {
+            return false;
+        }
+        Noeud current = this.getHead();
+        Element tete = (Element) current.getElement();
+        if (tete.getColone() == colone && tete.getLigne() == ligne) {
+            this.head = this.head.getSuivant();
+            taille--;
+            return true;
+        }
+        Noeud precedent = this.getHead();
+        while (current != null) {
+            Element currElement = (Element) current.getElement();
+            if (currElement.getColone() == colone && currElement.getLigne() == ligne) {
+                precedent.setSuivant(current.getSuivant());
+                current.setSuivant(null);
+                taille--;
+                return true;
+            }
+            precedent = current;
+            current = current.getSuivant();
+        }
+        return false;
+    }
+
+    public Element getElement(int ligne, int colone) {
+        if (taille == 0) {
+            return null;
+        }
+        Noeud current = this.head;
+        while (current != null) {
+            Element currElement = (Element) current.getElement();
+            if (currElement.getColone() == colone && currElement.getLigne() == ligne) {
+                return currElement;
+            }
+            current = current.getSuivant();
+        }
+        return null;
+    }
+
+    public Matrice calculerSomme(Matrice matrice) {
+        Matrice result = new Matrice();
+        if (this.taille == 0 || matrice.taille == 0) {
+            return null;
+        }
+        Noeud currentThis = this.head;
+        while (currentThis != null) {
+            Element currElementThis = (Element) currentThis.getElement();
+            result.ajouterFin(currElementThis.getLigne(), currElementThis.getColone(), currElementThis.getValeur());
+            currentThis = currentThis.getSuivant();
+        }
+        Noeud currentOther = matrice.head;
+        while (currentOther != null) {
+            Element currentElementOther = (Element) currentOther.getElement();
+            result.ajouterFin(currentElementOther.getLigne(), currentElementOther.getColone(),
+                    currentElementOther.getValeur());
+            currentOther = currentOther.getSuivant();
+        }
+        currentThis = this.head;
+        while (currentThis != null) {
+            Element currElementThis = (Element) currentThis.getElement();
+            if (matrice.getElement(currElementThis.getLigne(), currElementThis.getColone()) != null) {
+                result.ajouterFin(currElementThis.getLigne(), currElementThis.getColone(), currElementThis.getValeur()
+                        + matrice.getElement(currElementThis.getLigne(), currElementThis.getColone()).getValeur());
+            }
+            currentThis = currentThis.getSuivant();
+        }
+        return result;
+    }
+
+    public void afficher() {
+        if (this.taille != 0) {
+            Noeud current = this.getHead();
+            String result = "";
+            while (current != null) {
+                Element currElement = (Element) current.getElement();
+                result += "(" + currElement.getLigne() + "," + currElement.getColone() + "," + currElement.getValeur()
+                        + ") ";
+                if (current.getSuivant() != null) {
+                    result += " -> ";
+                }
+                current = current.getSuivant();
+            }
+            System.out.println(result);
+        }
     }
 }
